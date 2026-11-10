@@ -25,8 +25,8 @@ project.implementation.helperRecovery='20-minute routine research and 30-minute 
 project.implementation.previewProtection='AI previews are separate proposals requiring explicit application; existing PNG/GIF artwork is preserved during unrelated coding, with recovery backups and reported paths on failure';
 project.implementation.playerNotes='Focused changed-file evidence, full source captured for future baselines, and read-only history recovery requiring exact baseline hashes; plain-language player notes, private warnings, and an explicit no-draft result instead of a generic public fallback';
 project.implementation.claudeAuthentication='Serialized sign-in, cancellation and usage-refresh authentication; rate-limit cooldowns are respected without automatic request retries';
-project.repository='https://github.com/lordfelixmotosr/atlas';
-project.libraryDesign.onlinePublishing='Signed GitHub Release assets from lordfelixmotosr/atlas; restricted release redirects, daily checks, offline starter feed retained';
+project.repository='https://github.com/lordfelixmods/atlas';
+project.libraryDesign.onlinePublishing='Signed GitHub Release assets from lordfelixmods/atlas; restricted release redirects, daily checks, offline starter feed retained';
 project.buildPhases=project.buildPhases.filter(entry=>!entry.startsWith(version+':'));
 project.acceptanceResults.passed=project.acceptanceResults.passed.filter(entry=>!entry.startsWith(version+' '));
 project.buildPhases.push(version+': Helpers, preview preservation and player-facing change notes, including complete source evidence and explicit failure handling');
@@ -53,7 +53,7 @@ fs.writeFileSync(path.join(out,'Atlas-'+version+'-UPDATE.txt'),`Atlas ${version}
 Fresh installation: extract the portable ZIP into a writable folder and run Atlas.exe.
 Existing installation: open Settings > Updates, check for updates, then choose Install and restart when ready. Your profile, mods, chats and account settings remain in data.
 Signed update source:
-https://github.com/lordfelixmotosr/atlas/releases/latest/download/
+https://github.com/lordfelixmods/atlas/releases/latest/download/
 
 Included since 0.3.2:
 - Helpers: Efficient mode, four simultaneous helpers by default and up to eight. Routine research can use an eligible lighter model on the current provider; implementation and complex work keep the main model and requested thinking.

@@ -9,7 +9,10 @@ const VERSION = (() => {
   try { const {app} = require('electron'); if (app && typeof app.getVersion === 'function') return app.getVersion(); } catch {}
   return require('../../package.json').version;
 })();
-const ONLINE_SOURCE = 'https://github.com/lordfelixmotosr/atlas/releases/latest/download/';
+const ONLINE_SOURCE = 'https://github.com/lordfelixmods/atlas/releases/latest/download/';
+// The repository's address before it moved to its current owner. Saved configurations
+// that still point here are moved to ONLINE_SOURCE; it is never fetched.
+const LEGACY_ONLINE_SOURCE = 'https://github.com/lordfelixmotosr/atlas/releases/latest/download/';
 const MAX_BYTES = 24 * 1024 * 1024;
 const SAFE_ID = /^[a-z][a-z0-9-]{0,63}$/;
 const SAFE_VERSION = /^\d+\.\d+\.\d+$/;
@@ -84,6 +87,10 @@ class Library {
       // Upgrade only the former bundled default. Preserve explicit custom sources and auto-update choices.
       this.saveConfig({...this.config,source:this.config.source==='updates'?ONLINE_SOURCE:this.config.source,feedRevision:1,lastCheckedAt:null});
     }
+    if(online&&this.config.source===LEGACY_ONLINE_SOURCE){
+      // The default feed moved with the repository. Custom sources and auto-update choices are preserved.
+      this.saveConfig({...this.config,source:ONLINE_SOURCE,feedRevision:1,lastCheckedAt:null});
+    }
     this.state=readJson(this.statePath,{active:{},pending:{},previous:{},sequence:0});
     this.available=[]; this.working=false; this.lastChanges=[];
   }
@@ -134,7 +141,7 @@ class Library {
         const location=response.headers.get('location');await response.body?.cancel();
         if(!location||hop===5)throw new Error('Too many or invalid GitHub update redirects.');
         const next=new URL(location,target);
-        const repoPath='/lordfelixmotosr/atlas/releases/';
+        const repoPath='/lordfelixmods/atlas/releases/';
         const sameRepo=next.hostname==='github.com'&&(next.pathname===repoPath+'latest/download/'+relative||next.pathname.startsWith(repoPath+'download/')&&next.pathname.endsWith('/'+relative));
         const assetHost=next.hostname==='release-assets.githubusercontent.com'&&next.pathname.startsWith('/github-production-release-asset/');
         if(next.protocol!=='https:'||next.username||next.password||next.port||next.hash||(!sameRepo&&!assetHost)||sameRepo&&next.search)throw new Error('GitHub update redirect left the trusted release hosts.');

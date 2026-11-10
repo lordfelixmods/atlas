@@ -89,7 +89,7 @@
     "imageExecution": "provider adapters configured separately; optional external ComfyUI installation is not bundled by default",
     "personalLearning": "save evidence-backed local notes; user edits remain separate from managed packs",
     "modelWeightsChanged": false,
-    "onlinePublishing": "Signed GitHub Release assets from lordfelixmotosr/atlas; restricted release redirects, daily checks, offline starter feed retained"
+    "onlinePublishing": "Signed GitHub Release assets from lordfelixmods/atlas; restricted release redirects, daily checks, offline starter feed retained"
   },
   "updaterDesign": {
     "releaseFeed": "updates",
@@ -395,7 +395,7 @@
       "sha256": "77135a99922460cf77c7449a4e084acaffa21bf275259496ffebb5f838cefbea"
     }
   },
-  "repository": "https://github.com/lordfelixmotosr/atlas",
+  "repository": "https://github.com/lordfelixmods/atlas",
   "releaseVerification": {
     "version": "0.3.9",
     "typecheckPassed": true,

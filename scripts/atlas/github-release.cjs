@@ -1,7 +1,7 @@
 'use strict';
 // GitHub publishing uses an existing Git credential in memory; never prints or saves it.
 const fs=require('node:fs'),path=require('node:path'),cp=require('node:child_process'),crypto=require('node:crypto');
-const repository='lordfelixmotosr/atlas';
+const repository='lordfelixmods/atlas';
 let credential;
 function auth(){
  if(credential!==undefined)return credential;

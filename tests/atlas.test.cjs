@@ -5,7 +5,7 @@ const {bootstrap}=require('../src/atlas/bootstrap.cjs');
 const {sign}=require('../scripts/atlas/publish-packs.cjs');
 const {ApplicationUpdate}=require('../src/atlas/application-update.cjs');
 const fixtureBase=path.resolve(__dirname,'../build-check/fixtures');fs.mkdirSync(fixtureBase,{recursive:true});
-const onlineSource='https://github.com/lordfelixmotosr/atlas/releases/latest/download/';
+const onlineSource='https://github.com/lordfelixmods/atlas/releases/latest/download/';
 function cleanup(root){assert(root.startsWith(fixtureBase+path.sep));fs.rmSync(root,{recursive:true,force:true});}
 function fixture(t){const root=fs.mkdtempSync(path.join(fixtureBase,'atlas-test-')),resources=path.join(root,'resources'),keys=crypto.generateKeyPairSync('ed25519');fs.mkdirSync(resources);const trust={keys:{'atlas-local-1':keys.publicKey.export({format:'pem',type:'spki'})}};fs.writeFileSync(path.join(resources,'trust.json'),JSON.stringify(trust));t.after(()=>cleanup(root));return{root,resources,keys,trust};}
 function pack(version='0.1.0',extra={}){const text='---\nname: test-pack\ndescription: Test references\n---\n\nHarmony example for apparel.';return{type:'pack',id:'test-pack',name:'Example pack',description:'Test references',category:'skills',source:'https://example.com/references',license:'MIT',version,minAtlasVersion:'0.1.0',gameVersions:['1.6'],issuedAt:Date.now()-1000,expiresAt:Date.now()+86400000,files:[{path:'skills/test-pack/SKILL.md',encoding:'utf8',content:text,sha256:sha(Buffer.from(text))}],...extra};}
@@ -15,15 +15,18 @@ test('online distribution migrates the bundled default once while preserving cus
  const library=new Library(f.root,f.resources);assert.equal(library.config.source,onlineSource);library.configure({source:'updates',autoUpdate:false});assert.equal(new Library(f.root,f.resources).config.source,'updates');assert.equal(new Library(f.root,f.resources).config.autoUpdate,false);
  library.configure({source:'https://example.com/custom'});assert.equal(new Library(f.root,f.resources).config.source,'https://example.com/custom');
  fs.writeFileSync(library.configPath,JSON.stringify({source:'updates',autoUpdate:true}));assert.equal(new Library(f.root,f.resources).config.source,onlineSource);
+ // A saved default from before the repository moved follows it; the auto-update choice is kept.
+ fs.writeFileSync(library.configPath,JSON.stringify({source:'https://github.com/lordfelixmotosr/atlas/releases/latest/download/',autoUpdate:false,feedRevision:1,lastCheckedAt:1}));
+ const moved=new Library(f.root,f.resources).config;assert.equal(moved.source,onlineSource);assert.equal(moved.autoUpdate,false);assert.equal(moved.lastCheckedAt,null);
 });
 test('GitHub release redirects are restricted to the repository and asset host with credentials omitted',async t=>{
- const f=fixture(t),calls=[];const responses=[new Response(null,{status:302,headers:{location:'https://github.com/lordfelixmotosr/atlas/releases/download/v0.2.2/index.atlas.json'}}),new Response(null,{status:302,headers:{location:'https://release-assets.githubusercontent.com/github-production-release-asset/123/abc?sig=temporary'}}),new Response('signed feed')];
+ const f=fixture(t),calls=[];const responses=[new Response(null,{status:302,headers:{location:'https://github.com/lordfelixmods/atlas/releases/download/v0.2.2/index.atlas.json'}}),new Response(null,{status:302,headers:{location:'https://release-assets.githubusercontent.com/github-production-release-asset/123/abc?sig=temporary'}}),new Response('signed feed')];
  const library=new Library(f.root,f.resources,{fetch:async(url,options)=>{calls.push({url:String(url),options});return responses.shift()}});
  assert.equal((await library.obtain(onlineSource,'index.atlas.json')).toString(),'signed feed');assert.equal(calls.length,3);assert(calls.every(call=>call.options.credentials==='omit'&&call.options.redirect==='manual'&&!call.options.headers));
 });
 test('unsafe release redirects, loops and oversized downloads are rejected',async t=>{
  const f=fixture(t),library=new Library(f.root,f.resources);
- for(const destination of ['http://github.com/lordfelixmotosr/atlas/releases/download/v1/index.atlas.json','https://github.com/other/repo/releases/download/v1/index.atlas.json','https://evil.example/file','https://user:secret@release-assets.githubusercontent.com/github-production-release-asset/1/a','https://release-assets.githubusercontent.com/other/path']){
+ for(const destination of ['http://github.com/lordfelixmods/atlas/releases/download/v1/index.atlas.json','https://github.com/other/repo/releases/download/v1/index.atlas.json','https://evil.example/file','https://user:secret@release-assets.githubusercontent.com/github-production-release-asset/1/a','https://release-assets.githubusercontent.com/other/path']){
   library.fetch=async()=>new Response(null,{status:302,headers:{location:destination}});await assert.rejects(library.obtain(onlineSource,'index.atlas.json'),/trusted release/);
  }
  library.fetch=async()=>new Response(null,{status:302,headers:{location:onlineSource+'index.atlas.json'}});await assert.rejects(library.obtain(onlineSource,'index.atlas.json'),/Too many/);
